@@ -20,5 +20,21 @@ build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
-    "pytest (>=9.0.2,<10.0.0)"
+    "pytest (>=9.0.2,<10.0.0)",
+    "ruff (>=0.14.10,<0.15.0)",
+    "pre-commit (>=4.5.1,<5.0.0)"
 ]
+
+[tool.ruff.lint]
+line-length = 88
+target-version = "py311"
+
+# Enable all default E (pycodestyle errors), F (pyflakes), and I (isort) rules
+select = ["E", "F", "I"]
+# Exclude certain files or directories from linting
+exclude = ["venv", ".venv", "docs/*"]
+
+[tool.ruff.format]
+# Optional: Configure the formatter if you plan to use `ruff format`
+quote-style = "double"
+
