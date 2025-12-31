@@ -79,15 +79,6 @@ def validate_data_types(df: pd.DataFrame):
             )
     return True
 
-def validate_unit_price(df: pd.DataFrame):
-    for unit_price in df["UnitPrice"]:
-        if unit_price <=0:
-            raise UnitPriceError(
-                f"Unit price must be >= 0, but got {unit_price}"
-            )
-    return True
-
-
 
 
 

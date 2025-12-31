@@ -31,13 +31,4 @@ def test_valid_data_columns():
 
 def test_valid_data_type(sample_invalid_df):
     with pytest.raises(source_validator.DataTypesMismatchError):
-        source_validator.validate_data_types(sample_invalid_df)
-       
-
-#Test de Business errors
-def test_transaction_with_negative_quatity_raises_business_error():
-    pass
-
-def test_transaction_with_negative_unit_price_raises_business_error(sample_invalid_df):
-    with pytest.raises(source_validator.UnitPriceError):
-        source_validator.validate_unit_price(sample_invalid_df)
+        source_validator.validate_data_types(sample_invalid_df) 
