@@ -35,7 +35,7 @@ def sample_valid_df():
 @pytest.fixture
 def sample_invalid_df():
     """
-    Provides a DataFrame with the correct structure for test of 'Happy Path'.
+    Provides a DataFrame with the correct structure but incorrect datatypes.
     """
     import pandas as pd
 
@@ -89,4 +89,78 @@ def sample_df_to_flag():
                 "United Kingdom",
             ],
         }
+    )
+
+
+@pytest.fixture
+def sample_enriched_df():
+    """
+    Provides a DataFrame with the correct case to test.
+    """
+    import pandas as pd
+
+    return pd.DataFrame(
+        {
+            "InvoiceNo": [536365, 536366, 536367, 536368, 536369],
+            "StockCode": ["85123A", "85123B", "85123C", "85123D", "85123D"],
+            "Description": [
+                "WHITE HANGING HEART T-LIGHT HOLDER",
+                "Perfum Vegetal",
+                "T-shirt B",
+                "C",
+                "D",
+            ],
+            "Quantity": [6, -2, 0, 2, 8],
+            "InvoiceDate": [
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+            ],
+            "UnitPrice": [7.00, 3.5, 5.2, 0.0, -2.5],
+            "CustomerID": [17850, 17850, 17851, 17852, 17852],
+            "Country": [
+                "United Kingdom",
+                "United Kingdom",
+                "United Kingdom",
+                "United Kingdom",
+                "United Kingdom",
+            ],
+            "Flag": ["Standard", "Refund", "Anomaly", "Promotion/Gift", "Anomaly"],
+        },
+    )
+
+
+@pytest.fixture
+def sample_valid_enriched_df():
+    """
+    Provides a DataFrame with the correct case to test.
+    """
+    import pandas as pd
+
+    return pd.DataFrame(
+        {
+            "InvoiceNo": [536365, 536366, 536368],
+            "StockCode": ["85123A", "85123B", "85123D"],
+            "Description": [
+                "WHITE HANGING HEART T-LIGHT HOLDER",
+                "Perfum Vegetal",
+                "T-shirt B",
+            ],
+            "Quantity": [6, -2, 2],
+            "InvoiceDate": [
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+            ],
+            "UnitPrice": [7.00, 3.5, 0.0],
+            "CustomerID": [17850, 17850, 17852],
+            "Country": [
+                "United Kingdom",
+                "United Kingdom",
+                "United Kingdom",
+            ],
+            "Flag": ["Standard", "Refund", "Promotion/Gift"],
+        },
     )
