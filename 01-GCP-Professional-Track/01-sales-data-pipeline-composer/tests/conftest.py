@@ -164,3 +164,39 @@ def sample_valid_enriched_df():
             "Flag": ["Standard", "Refund", "Promotion/Gift"],
         },
     )
+
+
+@pytest.fixture
+def sample_valid_partitionable_df():
+    """
+    Provides a DataFrame with the correct case to test.
+    """
+    import pandas as pd
+
+    return pd.DataFrame(
+        {
+            "InvoiceNo": [536365, 536366, 536368],
+            "StockCode": ["85123A", "85123B", "85123D"],
+            "Description": [
+                "WHITE HANGING HEART T-LIGHT HOLDER",
+                "Perfum Vegetal",
+                "T-shirt B",
+            ],
+            "Quantity": [6, -2, 2],
+            "InvoiceDate": [
+                "2010-12-01 08:26:00",
+                "2010-12-01 08:26:00",
+                "2010-11-01 08:26:00",
+            ],
+            "UnitPrice": [7.00, 3.5, 0.0],
+            "CustomerID": [17850, 17850, 17852],
+            "Country": [
+                "United Kingdom",
+                "United Kingdom",
+                "United Kingdom",
+            ],
+            "Flag": ["Standard", "Refund", "Promotion/Gift"],
+            "year": [2010, 2010, 2010],
+            "month": [12, 12, 11],
+        },
+    )
