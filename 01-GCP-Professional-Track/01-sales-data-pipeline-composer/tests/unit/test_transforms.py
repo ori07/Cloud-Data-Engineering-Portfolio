@@ -21,6 +21,21 @@ def test_flagged_df(sample_df_to_flag):
     # Case non null in the new column
     assert enriched_df["Flag"].isna().sum() == 0
 
+def test_date_column_type(sample_enriched_df):
+    # Test if the column with the date in dataframe has te correct type
+    df = transforms.convert_date_column(sample_enriched_df)
+    actual_type = df["InvoiceDate"].dtype
+    expected_type = "datetime64[ns]"
+
+    assert actual_type == expected_type
+
+def test_check_partitions_columns_exist(sample_enriched_df):
+    df = transforms.convert_date_column(sample_enriched_df)
+    df = transforms.add_partition_date_columns(df)
+    assert ("year" in list(df.columns) and "month" in list(df.columns))
+
+
+
 
 """ def test_transaction_with_negative_quatity_raises_business_error():
     pass
