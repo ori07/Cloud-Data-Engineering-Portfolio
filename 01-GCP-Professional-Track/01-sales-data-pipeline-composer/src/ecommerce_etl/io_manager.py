@@ -27,6 +27,8 @@ def save_to_gold(df, saving_path):
     anomalies, df_clean = discard_anomalies(df)
     if df_clean.empty:
         raise CorruptDataError("No valid data to save after discarding anomalies")
+
+    # Set up the filesystem
     # Prepare the dataset
 
     # Convert pandas DataFrame to an Arrow Table
