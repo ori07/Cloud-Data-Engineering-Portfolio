@@ -1,3 +1,5 @@
+import os
+
 import fsspec as fs
 import pytest
 
@@ -21,9 +23,9 @@ def gcs_setup_teardown():
         fs_intance.rm(test_prefix, recursive=True)
 
 
-# @pytest.mark.skipif(
-#    os.environ.get("GOLD_OUTPUT_PATH") is None, reason="GCS bucket path not configured"
-# )
+@pytest.mark.skipif(
+    os.environ.get("GOLD_OUTPUT_PATH") is None, reason="GCS bucket path not configured"
+)
 def test_gcs_persistence_integration(sample_valid_partitionable_df, gcs_setup_teardown):
     path = gcs_setup_teardown
     # Save the df
