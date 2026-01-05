@@ -1,12 +1,19 @@
+import fsspec as fs
 import pandas as pd
 import pyarrow as pa
 import pyarrow.dataset as ds
+import pyarrow.fs
 
 
 class CorruptDataError(Exception):
     """Custom Exception for clarity in logs."""
 
     pass
+
+
+def _get_file_system(path):
+    fs_intance, _ = fs.core.url_to_fs(path)
+    return fs_intance
 
 
 def discard_anomalies(df: pd.DataFrame):
@@ -22,6 +29,12 @@ def get_file_list(path):
     return files
 
 
+def list_gcs_files(path):
+    fs_intance = _get_file_system(path)
+    files = fs_intance.find(path)  # list recursively all the files
+    return files
+
+
 def save_to_gold(df, saving_path):
     # Discard the anomalies in data
     anomalies, df_clean = discard_anomalies(df)
@@ -29,16 +42,18 @@ def save_to_gold(df, saving_path):
         raise CorruptDataError("No valid data to save after discarding anomalies")
 
     # Set up the filesystem
-    # Prepare the dataset
+    filesystem, path = pa.fs.FileSystem.from_uri(saving_path)
 
+    # Prepare the dataset
     # Convert pandas DataFrame to an Arrow Table
     table = pa.Table.from_pandas(df_clean)
     # Write the dataset with Hive partitioning
     ds.write_dataset(
         data=table,
-        base_dir=saving_path,
+        base_dir=path,
         format="parquet",
         partitioning=["year", "month"],  # Columns to partition by
         partitioning_flavor="hive",  # Use Hive-style partitioning
-        existing_data_behavior="overwrite_or_ignore",  # Handle existing data
+        filesystem=filesystem,
+        existing_data_behavior="delete_matching",  # Handle existing data
     )
