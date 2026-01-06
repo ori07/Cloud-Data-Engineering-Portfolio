@@ -10,6 +10,7 @@ on:
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/pyproject.toml'
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/poetry.lock'
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/.pre-commit.yaml'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/Dockerfile'
   pull_request:
     branches: [ main, master ]
     paths:
@@ -19,6 +20,7 @@ on:
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/pyproject.toml'
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/poetry.lock'
       - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/.pre-commit.yaml'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/Dockerfile'
 
 jobs:
   test:
