@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 .DS_Store
 thumbs.db
+.vscode/
+.idea/
 
 # === 2. Virtual Environments & Dependencies ===
 # Bloqueamos la carpeta de entorno local, pero NO el lockfile
@@ -40,3 +42,20 @@ secrets/
 *.parquet
 *.jsonl
 data/                # Carpeta para samples de datos locales que no queremos en Git
+temp_data/
+
+# === 6. Testing & Linting ===
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# === 7.  Airflow / Composer local ===
+standalone_admin_password.txt
+airflow.db
+airflow.cfg
+logs/
+
+# === 8. Jupyter Notebooks ===
+.ipynb_checkpoints

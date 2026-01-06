@@ -1,6 +1,19 @@
 repos:
+# 1. Hooks for cleansing and security
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml            # Validate YAML syntax
+      - id: check-json            # Validate JSON syntax
+      - id: check-added-large-files # Avoid to upload datasets > 100MB+
+        args: ['--maxkb=1000']    # Limit to 1MB for repo
+      - id: detect-private-key     # Avoid to upload JSON of GCP service accounts
+      - id: end-of-file-fixer     # Ensure all files terminate with a single empty line
+      - id: trailing-whitespace   # Strip trailing spaces
+
+  # 2. Ruff configuration to lastest version (Jan-2026)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14  # Asegúrate de que coincida o sea cercana a la versión en tu toml
+    rev: v0.3.0
     hooks:
       - id: ruff
         args: [ --fix ]

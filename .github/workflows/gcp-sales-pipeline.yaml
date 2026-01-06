@@ -1,0 +1,54 @@
+name: GCP Sales Pipeline CI
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/src/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/tests/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/config/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/pyproject.toml'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/poetry.lock'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/.pre-commit.yaml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/src/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/tests/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/config/**'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/pyproject.toml'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/poetry.lock'
+      - '01-GCP-Professional-Track/01-sales-data-pipeline-composer/.pre-commit.yaml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: 01-GCP-Professional-Track/01-sales-data-pipeline-composer
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'poetry'
+          cache-dependency-path: 01-GCP-Professional-Track/01-sales-data-pipeline-composer/poetry.lock
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-root --sync
+
+      - name: Linting & Formatting
+        run: |
+          poetry run ruff format --check .
+          poetry run ruff check .
+
+      - name: Run Pytest
+        run: poetry run pytest
