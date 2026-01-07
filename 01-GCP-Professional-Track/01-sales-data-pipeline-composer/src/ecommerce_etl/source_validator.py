@@ -85,13 +85,13 @@ def validate_source_structure(df: pd.DataFrame):
 
 def validate_data_types(df: pd.DataFrame):
     checks = {
-        "InvoiceNo": "object",
+        "InvoiceNo": "int64",
         "StockCode": "object",
         "Description": "object",
         "Quantity": "int64",
-        "InvoiceDate": "date",
+        "InvoiceDate": "object",
         "UnitPrice": "float64",
-        "CustomerID": "object",
+        "CustomerID": "int64",
         "Country": "object",
     }
 

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [0.5.0] - 2026-01-07
+### Added
+- **Orchestration Layer**: Created src/main.py as the main entry point, coordinating the flow between validation, transformation, and persistence.
+
+- **Cloud Run Jobs**: Successfully deployed and configured ecommerce-etl-job for serverless execution.
+
+- **Environment Configuration**: Integrated dynamic GCS paths (INPUT_PATH, GOLD_OUTPUT_PATH) via environment variables to decouple infrastructure from code.
+
+### Changed
+- **Validation Logic (Breaking Change)**: Refactored source_validator.py to implement the "Transform and Pass" pattern. Functions now return the DataFrame instead of booleans, ensuring data integrity across the pipeline.
+
+- **Deployment Flow**: Migrated build process to Cloud Build and Artifact Registry, eliminating local Docker dependencies.
+
+### Fixed
+- **Type Safety**: Resolved TypeError: 'bool' object is not subscriptable in the validation chain by fixing function return types.
+
+- **Data Ingestion**: Fixed schema mismatch errors by standardizing CSV input format (delimiter and header handling).
+
 ## [0.4.0] - 2026-01-07
 
 ### Added
