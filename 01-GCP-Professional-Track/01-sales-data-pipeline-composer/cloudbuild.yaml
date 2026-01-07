@@ -1,0 +1,11 @@
+steps:
+  # 1. Build the image using Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ecommerce-pipeline-repo/etl-pipeline:latest', '.']
+
+  # 2. Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/ecommerce-pipeline-repo/etl-pipeline:latest']
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ecommerce-pipeline-repo/etl-pipeline:latest'
