@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [0.4.0] - 2026-01-07
+
+### Added
+- **Cloud Build Integration**: Introduced `cloudbuild.yaml` to automate Docker image construction on GCP, establishing a native CI/CD path.
+
+- **Technical Debt Tracking**: Created `tech-debt.md` to formally document design trade-offs, pending refactors, and scalability considerations.
+
+### Changed
+- **Dependency Standardization**: Refactored `pyproject.toml` to strictly adhere to modern **Poetry** standards.
+- **Lockfile Refresh**: Regenerated `poetry.lock` to ensure cross-dependency consistency and reproducible builds across local and cloud environments.
+
 ## [0.3.0] - 2026-01-07
 ### Added
 - **Containerization**: Developed a multi-stage Dockerfile optimized for production using python:3.11-slim as the base image.
