@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pip install poetry==1.7.1
 
 # Copy project files (pyproject.toml and poetry.lock)
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml poetry.lock* ./
 
 # Install project dependencies into the system's Python environment
 RUN poetry install --only main --no-root && rm -rf $POETRY_CACHE_DIR
