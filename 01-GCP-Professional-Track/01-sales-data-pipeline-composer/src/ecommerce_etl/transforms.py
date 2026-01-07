@@ -33,3 +33,14 @@ def add_partition_date_columns(df: pd.DataFrame):
     df_with_partion_columns["year"] = df_with_partion_columns["InvoiceDate"].dt.year
     df_with_partion_columns["month"] = df_with_partion_columns["InvoiceDate"].dt.month
     return df_with_partion_columns
+
+
+def enrich_data(df_validated):
+    df_enriched = flag_df(df_validated)
+    return df_enriched
+
+
+def prepare_partitions(df_validated):
+    df_transformed = convert_date_column(df_validated)
+    df_transformed = add_partition_date_columns(df_transformed)
+    return df_transformed

@@ -80,18 +80,18 @@ def validate_source_structure(df: pd.DataFrame):
         raise SchemaMismatchError(
             "The file's columns do not match with expected schema."
         )
-    return True
+    return df
 
 
 def validate_data_types(df: pd.DataFrame):
     checks = {
-        "InvoiceNo": "object",
+        "InvoiceNo": "int64",
         "StockCode": "object",
         "Description": "object",
         "Quantity": "int64",
-        "InvoiceDate": "date",
+        "InvoiceDate": "object",
         "UnitPrice": "float64",
-        "CustomerID": "object",
+        "CustomerID": "int64",
         "Country": "object",
     }
 
@@ -100,4 +100,14 @@ def validate_data_types(df: pd.DataFrame):
             raise DataTypesMismatchError(
                 f"Column '{col}' expected {expected_dtype} but got {df[col].dtype}"
             )
-    return True
+    return df
+
+
+def load_and_validate(input_path):
+    # Load dataframe:
+    df = pd.read_csv(input_path)
+    # Validate the source
+    df_not_empty = validate_content_not_empty(df)
+    df_validated_structure = validate_source_structure(df_not_empty)
+    df_validated_dtypes = validate_data_types(df_validated_structure)
+    return df_validated_dtypes
