@@ -44,3 +44,11 @@ def prepare_partitions(df_validated):
     df_transformed = convert_date_column(df_validated)
     df_transformed = add_partition_date_columns(df_transformed)
     return df_transformed
+
+
+def discard_anomalies(df: pd.DataFrame):
+    # Drop the anomalies
+    filter_condition = df["Flag"] == "Anomaly"
+    anomalies = df[filter_condition]
+    df_clean = df[~filter_condition]
+    return [anomalies, df_clean]

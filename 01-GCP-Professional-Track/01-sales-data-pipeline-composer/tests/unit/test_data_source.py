@@ -1,46 +1,42 @@
-import pandas as pd
 import pytest
 
-from src.ecommerce_etl import source_validator
+from src.ecommerce_etl.data_source import CSVDataSource, LocalMockDataSource
+from src.ecommerce_etl.factory import DataSourceFactory, DataSourceTypeError
 
 
-# Valid data source parameters test
-def test_wrong_path_raises_config_error(non_existent_base_path):
-    test_year = 2009
-    test_month = 1
-    # Arrange: A date, where we know that there is no data
-    with pytest.raises(FileNotFoundError):
-        source_validator.validate_correct_path(
-            base_path=non_existent_base_path, year=test_year, month=test_month
-        )
+def test_factory_returns_csv_instance():
+    """if the extension is .csv, always must return CSVDataSource."""
+    path = "data/test.csv"
+    ds = DataSourceFactory.get_data_source(path, mode=".csv")
+
+    assert isinstance(ds, CSVDataSource)
+    assert "file" in ds.fs_instance.protocol  # Verificando herencia de set_origin
 
 
-def test_validate_content_raises_error_when_empty():
-    # Arrange:
-    df_empty = pd.DataFrame()
+def test_factory_returns_local_mock():
+    # We use an extention different to .csv
+    path = "any_file.txt"
+    ds = DataSourceFactory.get_data_source(path, mode="Develop-local")
 
-    # Act & Assert
-    with pytest.raises(source_validator.EmptyDataSourceError):
-        source_validator.validate_content_not_empty(df_empty)
-
-
-# Struture Enforcement test
-def test_valid_data_columns():
-    # Arrange
-    test_columns = [
-        "InvoiceNo",
-        "StockCode",
-        "Description",
-        "Quantity",
-        "InvoiceDate",
-        "CustomerID",
-        "Country",
-    ]
-    df_mismatch = pd.DataFrame(columns=test_columns)
-    with pytest.raises(source_validator.SchemaMismatchError):
-        source_validator.validate_source_structure(df_mismatch)
+    assert isinstance(ds, LocalMockDataSource)
+    assert "file" in ds.fs_instance.protocol
 
 
-def test_valid_data_type(sample_invalid_df):
-    with pytest.raises(source_validator.DataTypesMismatchError):
-        source_validator.validate_data_types(sample_invalid_df)
+def test_factory_raises_error_unsupported_type():
+    with pytest.raises(DataSourceTypeError) as excinfo:
+        DataSourceFactory.get_data_source("invalid_file.json", mode=".json")
+
+    assert "Type '.json' not supported" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "path, mode, expected_protocol",
+    [
+        ("gs://bucket/data.csv", ".csv", ("gs", "gcs")),
+        ("local/path/data.csv", ".csv", ("file", "local")),
+    ],
+)
+def test_factory_integration_with_set_origin(path, mode, expected_protocol):
+    """Test that the Factory delivers th object with configured origin."""
+    ds = DataSourceFactory.get_data_source(path, mode)
+    assert ds.fs_instance.protocol == expected_protocol

@@ -37,6 +37,13 @@ def test_check_partitions_columns_exist(sample_enriched_df):
     assert "year" in list(df.columns) and "month" in list(df.columns)
 
 
+def test_anomaly_exclusion(sample_valid_enriched_df):
+    # Test non row flaaged as "Anomaly" is part of the df
+    df = sample_valid_enriched_df
+    anomalies = transforms.discard_anomalies(df)[0]
+    assert len(anomalies) == 0
+
+
 """ def test_transaction_with_negative_quatity_raises_business_error():
     pass
     qué pasa con precio y cantidad cero?
