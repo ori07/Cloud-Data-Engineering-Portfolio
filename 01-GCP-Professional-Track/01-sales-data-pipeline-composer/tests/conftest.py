@@ -1,6 +1,30 @@
 # conftest.py
+import os
 
 import pytest
+
+from src.ecommerce_etl.data_source import CSVDataSource, LocalMockDataSource
+
+
+@pytest.fixture
+def mock_env():
+    """Limpia el entorno antes y después de cada test."""
+    old_env = os.environ.copy()
+    yield
+    os.environ.clear()
+    os.environ.update(old_env)
+
+
+@pytest.fixture
+def local_mock_instance():
+    """Return a LocalMock instance."""
+    return LocalMockDataSource()
+
+
+@pytest.fixture
+def csv_datasource_instance():
+    """Return a CSVDataSource instance."""
+    return CSVDataSource()
 
 
 @pytest.fixture
