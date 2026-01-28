@@ -13,8 +13,8 @@ def run_pipeline():
     ds = data_source.DataSourceFactory.get_data_source(input_path)
     df = ds.read()
 
-    # 2. Extraction & Validation (Technical Silver)
-    df = source_validator.load_and_validate(df)
+    # 2. Validation (Technical Silver)
+    df = source_validator.validate_data_source(df)
 
     # 3. Transformation (Silver - Business Layer)
     df_transformed = transforms.enrich_data(df)

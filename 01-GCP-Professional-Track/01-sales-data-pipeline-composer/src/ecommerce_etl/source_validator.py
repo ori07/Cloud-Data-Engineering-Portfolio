@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import pandera.polars as pa
@@ -31,32 +30,6 @@ class InvoiceSchema(pa.DataFrameModel):
         # Coerce types if necessary
         coerce = True
         strict = True
-
-
-# Complementary functions
-def get_source_path(base_path: str, execution_date: datetime = None) -> str:
-    if execution_date is None:
-        execution_date = datetime.now()
-
-    year = execution_date.year
-    month = execution_date.month
-    # canonical path
-    execution_path = base_path + f"/{year}/{month}/sales_{year}_{month}.csv"
-    return execution_path
-
-
-# Validation functions
-def validate_correct_path(base_path: str, year: int = None, month: int = None):
-    if year is None or month is None:
-        date_searched = None
-    else:
-        date_searched = datetime(year=year, month=month, day=1)
-    execution_path = get_source_path(base_path=base_path, execution_date=date_searched)
-
-    # Handle file no found error
-    if not os.path.exists(execution_path):
-        raise FileNotFoundError
-    return execution_path
 
 
 def validate_data_source(df: pl.DataFrame):
