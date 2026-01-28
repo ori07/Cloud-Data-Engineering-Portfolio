@@ -40,15 +40,17 @@ def sample_valid_df():
     """
     Provides a DataFrame with the correct structure for test of 'Happy Path'.
     """
-    import pandas as pd
+    from datetime import datetime
 
-    return pd.DataFrame(
+    import polars as pl
+
+    return pl.DataFrame(
         {
             "InvoiceNo": ["536365"],
             "StockCode": ["85123A"],
             "Description": ["WHITE HANGING HEART T-LIGHT HOLDER"],
             "Quantity": [6],
-            "InvoiceDate": ["2010-12-01 08:26:00"],
+            "InvoiceDate": [datetime.now()],
             "UnitPrice": [2.55],
             "CustomerID": ["17850"],
             "Country": ["United Kingdom"],
@@ -61,15 +63,17 @@ def sample_invalid_df():
     """
     Provides a DataFrame with the correct structure but incorrect datatypes.
     """
-    import pandas as pd
+    from datetime import datetime
 
-    return pd.DataFrame(
+    import polars as pl
+
+    return pl.DataFrame(
         {
             "InvoiceNo": [536365],
             "StockCode": ["85123A"],
             "Description": ["WHITE HANGING HEART T-LIGHT HOLDER"],
             "Quantity": [6.0],
-            "InvoiceDate": ["2010-12-01 08:26:00"],
+            "InvoiceDate": [datetime.now()],
             "UnitPrice": [-2.55],
             "CustomerID": [17850],
             "Country": ["United Kingdom"],
