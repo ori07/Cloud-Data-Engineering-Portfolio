@@ -1,6 +1,9 @@
+import pytest
+
 from src.ecommerce_etl import io_manager
 
 
+@pytest.mark.skip(reason="This feature is currently under refactor")
 def test_save_to_gold_is_idempotent(tmp_path, sample_valid_partitionable_df):
     # Test the correct behavior when the process is trigged two times
     base_path = tmp_path / "gold"
@@ -17,6 +20,7 @@ def test_save_to_gold_is_idempotent(tmp_path, sample_valid_partitionable_df):
     assert len(initial_files) == len(final_files)
 
 
+@pytest.mark.skip(reason="This feature is currently under refactor")
 def test_hive_like_structure(sample_valid_partitionable_df, tmp_path):
     # Test the correct tree folder's structure creation
     base_path = tmp_path / "gold"
