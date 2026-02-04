@@ -1,9 +1,10 @@
 # conftest.py
 import os
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.ecommerce_etl.data_source import CSVDataSource, LocalMockDataSource
+from src.ecommerce_etl.data_source import CSVDataSource
 
 
 @pytest.fixture
@@ -15,10 +16,10 @@ def mock_env():
     os.environ.update(old_env)
 
 
-@pytest.fixture
-def local_mock_instance():
-    """Return a LocalMock instance."""
-    return LocalMockDataSource()
+# @pytest.fixture
+# def local_mock_instance():
+#     """Return a LocalMock instance."""
+#     return LocalMockDataSource()
 
 
 @pytest.fixture
@@ -33,6 +34,14 @@ def non_existent_base_path():
     Provides a route which does not exist
     """
     return "/tmp/data/this_path_is_fake_12345"
+
+
+@pytest.fixture
+def mock_fsspec():
+    with patch("fsspec.filesystem") as mock_factory:
+        mock_fs = MagicMock()
+        mock_factory.return_value = mock_fs
+        yield mock_fs  # El test recibe el mock_fs directamente
 
 
 @pytest.fixture

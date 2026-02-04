@@ -4,7 +4,7 @@ import fsspec as fs
 import pytest
 
 from config import config
-from src.ecommerce_etl import io_manager
+from src.ecommerce_etl import io_factory
 
 # @pytest.fixture(scope="session", autouse=True)
 # def set_env_variables(monkeypatch):
@@ -29,10 +29,10 @@ def gcs_setup_teardown():
 def test_gcs_persistence_integration(sample_valid_partitionable_df, gcs_setup_teardown):
     path = gcs_setup_teardown
     # Save the df
-    io_manager.save_to_gold(sample_valid_partitionable_df, path)
+    io_factory.save_to_gold(sample_valid_partitionable_df, path)
 
     # Verification, using fsspec abstraction
-    files = io_manager.list_gcs_files(path)
+    files = io_factory.list_gcs_files(path)
 
     assert len(files) > 0
     assert any("year=2010" in f for f in files)

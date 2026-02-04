@@ -1,41 +1,34 @@
 from abc import ABC, abstractmethod
 
-import fsspec as fs
 import polars as pl
 
-from .factory import DataSourceFactory
+from .data_source_factory import DataSourceFactory
 
 
 class DataSource(ABC):
-    def __init__(self, origin):
+    def __init__(self):
         super().__init__()
-        self.set_origin(origin)
-
-    def set_origin(self, origin):
-        fs_instance, path = fs.core.url_to_fs(origin)
-        self.path = path
-        self.fs_instance = fs_instance
 
     @abstractmethod
-    def read():
+    def read(self, stream):
         pass
 
 
 @DataSourceFactory.register(".csv")
 class CSVDataSource(DataSource):
-    def __init__(self, origin):
-        super().__init__(origin)
+    def __init__(self):
+        super().__init__()
 
-    def read(self):
-        df = pl.read_csv(self.path)
+    def read(self, stream):
+        df = pl.read_csv(stream)
         return df
 
 
-@DataSourceFactory.register("Develop-local")
-class LocalMockDataSource(DataSource):
-    def __init__(self, origin):
-        super().__init__(origin)
+@DataSourceFactory.register(".parquet")
+class ParquetDataSource(DataSource):
+    def __init__(self):
+        super().__init__()
 
-    def read(self):
-        df = pl.read_csv(self.path)
+    def read(self, stream):
+        df = pl.read_parquet(stream)
         return df

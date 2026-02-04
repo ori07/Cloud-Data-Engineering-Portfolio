@@ -21,11 +21,15 @@ class DataSourceFactory:
         return wrapper
 
     @classmethod
-    def get_data_source(cls, path: str, mode: str):
+    def get_data_source(cls, path: str, mode: str = None):
+        if mode is None:
+            import os
+
+            mode = os.path.splitext(path)[1]  # returns '.csv', '.parquet', etc.
         if mode not in cls._registry:
             raise DataSourceTypeError(
                 f"Type '{mode}' not supported. Aborting pipeline."
             )
 
-        instance = cls._registry[mode](path)
-        return instance
+        instance = cls._registry[mode]
+        return instance()

@@ -1,71 +1,114 @@
-# Implements the load and save data
+from abc import ABC, abstractmethod
 
 import fsspec as fs
-import pyarrow as pa
 import pyarrow.dataset as ds
-import pyarrow.fs
+
+from .io_factory import IOFactory
 
 
-class CorruptDataError(Exception):
-    """Custom Exception for clarity in logs."""
-
+class IOManagerError(Exception):
     pass
 
 
-def _get_file_system(path):
-    fs_intance, _ = fs.core.url_to_fs(path)
-    return fs_intance
+class IOManagerPermissionsError(Exception):
+    pass
 
 
-def get_file_list(path):
-    files = list(path.glob("*.parquet"))
-    return files
+class IOManager(ABC):
+    """Implements the interface for every protocol to connect to
+    the infraestruture layer for load and save data
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def exists(self, path: str) -> bool:
+        pass
+
+    @abstractmethod
+    def open_stream(self, path: str):
+        pass
+
+    @abstractmethod
+    def save_dataframe(self, df, path: str):
+        pass
+
+    @abstractmethod
+    def get_file_list(self, path: str):
+        pass
 
 
-def list_gcs_files(path):
-    fs_intance = _get_file_system(path)
-    files = fs_intance.find(path)  # list recursively all the files
-    return files
+@IOFactory.register("gs")
+class CloudIOManager(IOManager):
+    def __init__(self, **bucket_config):
+        super().__init__()
+        self.fs = fs.filesystem("gs", **bucket_config)
+
+    def exists(self, path):
+        try:
+            return self.fs.exists(path)
+        except Exception as e:
+            raise IOManagerError(f"File not found at {path}: {str(e)}")
+
+    def open_stream(self, path):
+        try:
+            return self.fs.open(path, mode="rb")
+        except Exception as e:
+            raise IOManagerPermissionsError(
+                f"Pemission denied to read file {path}: {str(e)}"
+            )
+
+    def get_file_list(self, path):
+        files = self.fs.find(path)  # list recursively all the files
+        return files
+
+    def save_dataframe(self, df, path):
+        # Prepare the dataset
+        # Convert pandas DataFrame to an Arrow Table
+        table = df.to_arrow()
+        # Write the dataset with Hive partitioning
+        ds.write_dataset(
+            data=table,
+            base_dir=path,
+            format="parquet",
+            partitioning=["year", "month"],  # Columns to partition by
+            partitioning_flavor="hive",  # Use Hive-style partitioning
+            filesystem=self.fs,
+            existing_data_behavior="delete_matching",  # Handle existing data
+        )
 
 
-def save_to_gold(df, saving_path):
-    # Set up the filesystem
-    filesystem, path = pa.fs.FileSystem.from_uri(saving_path)
+@IOFactory.register("file")
+class LocalIOManager(IOManager):
+    def __init__(self, **kwargs):
+        super().__init__()
+        # Creamos un handler local explícito para evitar errores en save_dataframe
+        self.fs = fs.filesystem("file")
 
-    # Prepare the dataset
-    # Convert pandas DataFrame to an Arrow Table
-    table = pa.Table.from_pandas(df)
-    # Write the dataset with Hive partitioning
-    ds.write_dataset(
-        data=table,
-        base_dir=path,
-        format="parquet",
-        partitioning=["year", "month"],  # Columns to partition by
-        partitioning_flavor="hive",  # Use Hive-style partitioning
-        filesystem=filesystem,
-        existing_data_behavior="delete_matching",  # Handle existing data
-    )
+    def exists(self, path):
+        try:
+            return self.fs.exists(path)
+        except Exception as e:
+            raise IOManagerError(f"File not found at {path}: {str(e)}")
 
+    def open_stream(self, path):
+        return self.fs.open(path, mode="rb")
 
-# # Complementary functions
-# def get_source_path(base_path: str, execution_date: datetime = None) -> str:
-#     if execution_date is None:
-#         execution_date = datetime.now()
+    def get_file_list(self, path):
+        return self.fs.find(path)
 
-#     year = execution_date.year
-#     month = execution_date.month
-#     # canonical path
-#     execution_path = base_path + f"/{year}/{month}/sales_{year}_{month}.csv"
-#     return execution_path
-#
-# # Validation functions
-# def validate_correct_path(base_path: str, year: int = None, month: int = None):
-#     if year is None or month is None:
-#         date_searched = None
-#     else:
-#         date_searched = datetime(year=year, month=month, day=1)
-#     execut_path = get_source_path(base_path=base_path, execution_date=date_searched)
-#     # Handle file no found error
-#     if not os.path.exists(execution_path):
-#         raise FileNotFoundError
-#     return execution_path
+    def save_dataframe(self, df, path):
+        # Prepare the dataset
+        # Convert pandas DataFrame to an Arrow Table
+        table = df.to_arrow()
+        # Write the dataset with Hive partitioning
+        ds.write_dataset(
+            data=table,
+            base_dir=path,
+            format="parquet",
+            partitioning=["year", "month"],  # Columns to partition by
+            partitioning_flavor="hive",  # Use Hive-style partitioning
+            filesystem=self.fs,
+            existing_data_behavior="delete_matching",  # Handle existing data
+        )

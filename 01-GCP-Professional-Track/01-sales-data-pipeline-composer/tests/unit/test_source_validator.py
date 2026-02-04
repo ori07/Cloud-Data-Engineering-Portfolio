@@ -5,18 +5,6 @@ import pytest
 from src.ecommerce_etl import source_validator
 
 
-# Valid data source parameters test
-@pytest.mark.skip(reason="This feature is currently under refactor")
-def test_wrong_path_raises_config_error(non_existent_base_path):
-    test_year = 2009
-    test_month = 1
-    # Arrange: A date, where we know that there is no data
-    with pytest.raises(FileNotFoundError):
-        source_validator.validate_correct_path(
-            base_path=non_existent_base_path, year=test_year, month=test_month
-        )
-
-
 def test_schema_strictness_missing_column(sample_valid_df):
     # Arrange: DF with misses "UnitPrice" column
     df_missing_col = sample_valid_df.drop("UnitPrice")
