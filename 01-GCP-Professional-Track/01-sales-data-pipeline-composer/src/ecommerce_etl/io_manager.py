@@ -1,49 +1,101 @@
-class IOFactory:
-    _registry = {}
+from abc import ABC, abstractmethod
 
-    @classmethod
-    def register(cls, protocol: str):
-        def wrapper(subclass):
-            cls._registry[protocol] = subclass
-            return subclass
+import fsspec as fs
+import pyarrow.dataset as ds
 
-        return wrapper
-
-    @classmethod
-    def get_manager(cls, uri: str, **kwargs):
-        # Extraemos el protocolo del URI (ej: 's3' de 's3://bucket/...')
-        protocol = uri.split("://")[0] if "://" in uri else "file"
-
-        manager_class = cls._registry.get(protocol)
-        if not manager_class:
-            raise ValueError(
-                f"There is no IOManager registered for the protocol: {protocol}"
-            )
-
-        return manager_class(**kwargs)
+from .io_factory import IOFactory
 
 
-# # Complementary functions
-# def get_source_path(base_path: str, execution_date: datetime = None) -> str:
-#     if execution_date is None:
-#         execution_date = datetime.now()
+class IOManager(ABC):
+    """Implements the interface for every protocol to connect to
+    the infraestruture layer for load and save data
+    """
 
-#     year = execution_date.year
-#     month = execution_date.month
-#     # canonical path
-#     # Set up the filesystem
-#     filesystem, path = pa.fs.FileSystem.from_uri(base_path)
-#     execution_path = base_path + f"/{year}/{month}/sales_{year}_{month}.csv"
-#     return execution_path
-#
-# # Validation functions
-# def validate_correct_path(base_path: str, year: int = None, month: int = None):
-#     if year is None or month is None:
-#         date_searched = None
-#     else:
-#         date_searched = datetime(year=year, month=month, day=1)
-#     execut_path = get_source_path(base_path=base_path, execution_date=date_searched)
-#     # Handle file no found error
-#     if not os.path.exists(execution_path):
-#         raise FileNotFoundError
-#     return execution_path
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def exists(self, path: str) -> bool:
+        pass
+
+    @abstractmethod
+    def open_stream(self, path: str):
+        pass
+
+    @abstractmethod
+    def save_dataframe(self, df, path: str):
+        pass
+
+    @abstractmethod
+    def get_file_list(self, path: str):
+        pass
+
+
+@IOFactory.register("gs")
+class CloudIOManager(IOManager):
+    def __init__(self, **bucket_config):
+        self.fs = fs.filesystem("gs", **bucket_config)
+
+    def exists(self, path):
+        return self.fs.exists(path)
+
+    def open_stream(self, path):
+        return self.fs.open(path, mode="rb")
+
+    def get_file_list(self, path):
+        files = self.fs.find(path)  # list recursively all the files
+        return files
+
+    def save_dataframe(self, df, path):
+        # Prepare the dataset
+        # Convert pandas DataFrame to an Arrow Table
+        table = df.to_arrow()
+        # Write the dataset with Hive partitioning
+        ds.write_dataset(
+            data=table,
+            base_dir=path,
+            format="parquet",
+            partitioning=["year", "month"],  # Columns to partition by
+            partitioning_flavor="hive",  # Use Hive-style partitioning
+            filesystem=self.fs,
+            existing_data_behavior="delete_matching",  # Handle existing data
+        )
+
+
+@IOFactory.register("file")
+class LocalIOManager(IOManager):
+    def __init__(self, **kwargs):
+        # Creamos un handler local explícito para evitar errores en save_dataframe
+        import pyarrow.fs
+
+        self.fs = pyarrow.fs.LocalFileSystem()
+
+    def exists(self, path):
+        import os
+
+        return os.path.exists(path)
+
+    def open_stream(self, path):
+        import fsspec
+
+        return fsspec.open(path, mode="rb").open()
+
+    def get_file_list(self, path):
+        from pathlib import Path
+
+        return [str(p) for p in Path(path).glob("**/*.parquet")]
+
+    def save_dataframe(self, df, path):
+        # Prepare the dataset
+        # Convert pandas DataFrame to an Arrow Table
+        table = df.to_arrow()
+        # Write the dataset with Hive partitioning
+        ds.write_dataset(
+            data=table,
+            base_dir=path,
+            format="parquet",
+            partitioning=["year", "month"],  # Columns to partition by
+            partitioning_flavor="hive",  # Use Hive-style partitioning
+            filesystem=self.fs,
+            existing_data_behavior="delete_matching",  # Handle existing data
+        )
