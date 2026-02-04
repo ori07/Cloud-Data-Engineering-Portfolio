@@ -1,6 +1,8 @@
 import os
 
-from ecommerce_etl import data_source, source_validator, transforms
+from ecommerce_etl import io_factory, source_validator, transforms
+
+from src.ecommerce_etl import data_source_factory
 
 
 def run_pipeline():
@@ -10,8 +12,11 @@ def run_pipeline():
 
     print(f"Init ETL for: {input_path}")
     # 2. Load data
-    ds = data_source.DataSourceFactory.get_data_source(input_path)
-    df = ds.read()
+    manager = io_factory.IOFactory.get_manager(input_path)
+    parser = data_source_factory.DataSourceFactory.get_data_source(input_path)
+
+    with manager.open_stream(input_path) as stream:
+        df = parser.read(stream)
 
     # 2. Validation (Technical Silver)
     df = source_validator.validate_data_source(df)
