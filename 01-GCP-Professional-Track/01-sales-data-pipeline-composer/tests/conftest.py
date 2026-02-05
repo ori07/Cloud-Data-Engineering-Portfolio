@@ -1,7 +1,9 @@
 # conftest.py
 import os
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
+import polars as pl
 import pytest
 
 from src.ecommerce_etl.data_source import CSVDataSource
@@ -14,12 +16,6 @@ def mock_env():
     yield
     os.environ.clear()
     os.environ.update(old_env)
-
-
-# @pytest.fixture
-# def local_mock_instance():
-#     """Return a LocalMock instance."""
-#     return LocalMockDataSource()
 
 
 @pytest.fixture
@@ -49,10 +45,6 @@ def sample_valid_df():
     """
     Provides a DataFrame with the correct structure for test of 'Happy Path'.
     """
-    from datetime import datetime
-
-    import polars as pl
-
     return pl.DataFrame(
         {
             "InvoiceNo": ["536365"],
@@ -72,10 +64,6 @@ def sample_invalid_df():
     """
     Provides a DataFrame with the correct structure but incorrect datatypes.
     """
-    from datetime import datetime
-
-    import polars as pl
-
     return pl.DataFrame(
         {
             "InvoiceNo": [536365],
@@ -93,113 +81,79 @@ def sample_invalid_df():
 @pytest.fixture
 def sample_df_to_flag():
     """
-    Provides a DataFrame with the correct case to test.
+    Provides a Polars DataFrame with scenarios for all business flags.
     """
-    import pandas as pd
+    import polars as pl
 
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "InvoiceNo": [536365, 536366, 536367, 536368, 536369],
-            "StockCode": ["85123A", "85123B", "85123C", "85123D", "85123D"],
+            "StockCode": ["85123A", "85123B", "85123C", "85123D", "85123E"],
             "Description": [
-                "WHITE HANGING HEART T-LIGHT HOLDER",
-                "Perfum Vegetal",
-                "T-shirt B",
-                "C",
-                "D",
+                "Standard",
+                "Refund",
+                "Anomaly Qty",
+                "Gift",
+                "Anomaly Price",
             ],
             "Quantity": [6, -2, 0, 2, 8],
-            "InvoiceDate": [
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-            ],
+            "InvoiceDate": ["2010-12-01 08:26:00"] * 5,
             "UnitPrice": [7.00, 3.5, 5.2, 0.0, -2.5],
-            "CustomerID": [17850, 17850, 17851, 17852, 17852],
-            "Country": [
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-            ],
-        }
+            "CustomerID": [17850, 17850, 17851, 17852, 17853],
+            "Country": ["United Kingdom"] * 5,
+        },
+        schema={
+            "InvoiceNo": pl.Int64,
+            "StockCode": pl.String,
+            "Description": pl.String,
+            "Quantity": pl.Int64,
+            "InvoiceDate": pl.String,
+            "UnitPrice": pl.Float64,
+            "CustomerID": pl.Int64,
+            "Country": pl.String,
+        },
     )
 
 
 @pytest.fixture
 def sample_enriched_df():
     """
-    Provides a DataFrame with the correct case to test.
+    Represents the state AFTER flag_df has run.
+    Contains 5 rows (including 2 anomalies).
     """
-    import pandas as pd
-
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "InvoiceNo": [536365, 536366, 536367, 536368, 536369],
             "StockCode": ["85123A", "85123B", "85123C", "85123D", "85123D"],
-            "Description": [
-                "WHITE HANGING HEART T-LIGHT HOLDER",
-                "Perfum Vegetal",
-                "T-shirt B",
-                "C",
-                "D",
-            ],
+            "Description": ["WHITE...", "Perfum...", "T-shirt...", "C", "D"],
             "Quantity": [6, -2, 0, 2, 8],
-            "InvoiceDate": [
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-            ],
+            "InvoiceDate": ["2010-12-01 08:26:00"] * 5,
             "UnitPrice": [7.00, 3.5, 5.2, 0.0, -2.5],
             "CustomerID": [17850, 17850, 17851, 17852, 17852],
-            "Country": [
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-            ],
+            "Country": ["United Kingdom"] * 5,
             "Flag": ["Standard", "Refund", "Anomaly", "Promotion/Gift", "Anomaly"],
-        },
+        }
     )
 
 
 @pytest.fixture
 def sample_valid_enriched_df():
     """
-    Provides a DataFrame with the correct case to test.
+    Represents the expected result AFTER discard_anomalies.
+    Should contain only the 3 non-anomaly rows.
     """
-    import pandas as pd
-
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "InvoiceNo": [536365, 536366, 536368],
             "StockCode": ["85123A", "85123B", "85123D"],
-            "Description": [
-                "WHITE HANGING HEART T-LIGHT HOLDER",
-                "Perfum Vegetal",
-                "T-shirt B",
-            ],
+            "Description": ["WHITE...", "Perfum...", "T-shirt B"],
             "Quantity": [6, -2, 2],
-            "InvoiceDate": [
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-                "2010-12-01 08:26:00",
-            ],
+            "InvoiceDate": ["2010-12-01 08:26:00"] * 3,
             "UnitPrice": [7.00, 3.5, 0.0],
             "CustomerID": [17850, 17850, 17852],
-            "Country": [
-                "United Kingdom",
-                "United Kingdom",
-                "United Kingdom",
-            ],
+            "Country": ["United Kingdom"] * 3,
             "Flag": ["Standard", "Refund", "Promotion/Gift"],
-        },
+        }
     )
 
 
@@ -208,9 +162,7 @@ def sample_valid_partitionable_df():
     """
     Provides a DataFrame with the correct case to test.
     """
-    import pandas as pd
-
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "InvoiceNo": [536365, 536366, 536368],
             "StockCode": ["85123A", "85123B", "85123D"],
