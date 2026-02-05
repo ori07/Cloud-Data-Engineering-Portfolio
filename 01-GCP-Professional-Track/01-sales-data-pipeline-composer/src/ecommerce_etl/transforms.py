@@ -1,54 +1,56 @@
-import numpy as np
-import pandas as pd
+from typing import List
+
+import polars as pl
 
 
 # Flag to enrich the dataset
-def flag_df(df: pd.DataFrame):
+def flag_df(df: pl.DataFrame) -> pl.DataFrame:
     # Flag the data with for business logic
-    df_res = df.copy()
-    condition_list = [
-        ((df_res["Quantity"] == 0) | (df_res["UnitPrice"] < 0)),
-        ((df_res["Quantity"] < 0) & (df_res["UnitPrice"] > 0.0)),
-        ((df_res["Quantity"] > 0) & (df_res["UnitPrice"] == 0.0)),
-    ]
-    choice_list = ["Anomaly", "Refund", "Promotion/Gift"]
-    df_res["Flag"] = np.select(condition_list, choice_list, default="Standard")
-    return df_res
+    return df.with_columns(
+        pl.when((pl.col("Quantity") == 0) | (pl.col("UnitPrice") < 0))
+        .then(pl.lit("Anomaly"))
+        .when((pl.col("Quantity") < 0) & (pl.col("UnitPrice") > 0.0))
+        .then(pl.lit("Refund"))
+        .when((pl.col("Quantity") > 0) & (pl.col("UnitPrice") == 0.0))
+        .then(pl.lit("Promotion/Gift"))
+        .otherwise(pl.lit("Standard"))
+        .alias("Flag")
+    )
 
 
-def convert_date_column(df: pd.DataFrame):
-    # Convert the 'date_col' to datetime objects
-    try:
-        df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], errors="coerce")
-        return df
-    except (ValueError, pd.errors.ParserError) as e:
-        # This block will execute because 'invalid-date' cannot be parsed
-        print(f"Error occurred: {e}")
-        print("Execution stopped due to invalid date format.")
+# def convert_date_column(df: pl.DataFrame):
+#     # Convert the 'date_col' to datetime objects
+#     try:
+#         pl.col("InvoiceDate").str.to_date("%Y-%m-%d")
+#         return df
+#     except (ValueError, pl.exceptions.InvalidOperationError) as e:
+#         # This block will execute because 'invalid-date' cannot be parsed
+#         print(f"Error occurred: {e}")
+#         print("Execution stopped due to invalid date format.")
 
 
-def add_partition_date_columns(df: pd.DataFrame):
-    df_with_partion_columns = df.copy()
-    df_with_partion_columns = convert_date_column(df_with_partion_columns)
-    df_with_partion_columns["year"] = df_with_partion_columns["InvoiceDate"].dt.year
-    df_with_partion_columns["month"] = df_with_partion_columns["InvoiceDate"].dt.month
-    return df_with_partion_columns
+# def add_partition_columns(df: pl.DataFrame) -> pl.DataFrame:
+#     return df.with_columns([
+#         pl.col("InvoiceDate").dt.year().alias("year"),
+#         pl.col("InvoiceDate").dt.month().alias("month")
+#     ])
+
+# def enrich_data(df_validated):
+#     df_enriched = flag_df(df_validated)
+#     return df_enriched
 
 
-def enrich_data(df_validated):
-    df_enriched = flag_df(df_validated)
-    return df_enriched
+# def prepare_partitions(df_validated):
+#     df_transformed = convert_date_column(df_validated)
+#     df_transformed = add_partition_date_columns(df_transformed)
+#     return df_transformed
 
 
-def prepare_partitions(df_validated):
-    df_transformed = convert_date_column(df_validated)
-    df_transformed = add_partition_date_columns(df_transformed)
-    return df_transformed
+def discard_anomalies(df: pl.DataFrame) -> List[pl.DataFrame]:
+    """
+    Splits the DataFrame into two: anomalies and clean data.
+    """
+    anomalies = df.filter(pl.col("Flag") == "Anomaly")
+    df_clean = df.filter(pl.col("Flag") != "Anomaly")
 
-
-def discard_anomalies(df: pd.DataFrame):
-    # Drop the anomalies
-    filter_condition = df["Flag"] == "Anomaly"
-    anomalies = df[filter_condition]
-    df_clean = df[~filter_condition]
     return [anomalies, df_clean]

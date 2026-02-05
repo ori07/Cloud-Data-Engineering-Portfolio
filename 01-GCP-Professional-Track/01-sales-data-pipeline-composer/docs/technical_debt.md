@@ -1,7 +1,11 @@
-Prioridad,Categoría,Descripción
-Alta	Cloud Refactor	Migrar validaciones de rutas en source_validator.py y transforms.py para que utilicen fsspec o gsutil en lugar de librerías locales (os.path, pathlib).
-Alta	Resiliencia	Implementar chequeos de existencia de archivos en GCS antes de iniciar el Job (evitar fallos por rutas vacías).
-Alta,CI/CD,Implementar Cloud Build Triggers para automatizar el build al hacer merge en main.
-Media,Medallion Architecture,Implementar funciones de ingesta para capas Bronze (raw landing) y Silver (técnica/limpieza) para persistencia física.
-Media,Testing,"Ampliar cobertura de tests para Edge Cases (archivos vacíos, esquemas malformados, valores nulos extremos)."
-Baja,Observabilidad,Integrar Cloud Logging para métricas personalizadas sobre el volumen de datos procesado por el Job.
+# Technical Debt & Roadmap Backlog
+
+| Priority | Category | Description | Status |
+| :--- | :--- | :--- | :--- |
+| **Critical** | **Scalability** | **OOM (Out-of-Memory) Management:** Implement Polars Streaming mode to process 5GB datasets in environments with 2GB RAM. Shift from `read_csv/parquet` to `scan_csv/parquet` + `collect(streaming=True)`. | **New** |
+| **Critical** | **Data Quality** | **Quarantine Zone (Sink):** Implement physical persistence for invalid records. Rejected rows from Pandera must be saved to a `gs://.../quarantine/` path with error metadata for auditing. | **New** |
+| **High** | **Cloud Refactor** | **Infrastructure Agnosticism:** Refactor `source_validator.py` and `transforms.py` to use `fsspec` or the new `IOManager` instead of local libraries (`os.path`, `pathlib`). | Pending |
+| **High** | **Resilience** | **Pre-flight Checks:** Implement GCS object existence validation before Job execution to prevent empty-path failures. | Pending |
+| **Medium** | **Medallion Architecture** | **Ingestion Layers:** Implement physical persistence logic for Bronze (raw landing) and Silver (cleansed/technical) layers. | Pending |
+| **Medium** | **Testing** | **Edge Case Coverage:** Expand test suite to handle empty files, malformed schemas, and extreme null values (partially addressed with Pandera). | In Progress |
+| **Low** | **Observability** | **Cloud Logging:** Integrate GCP Cloud Logging for custom metrics regarding data volume and processing time. | Pending |
