@@ -8,6 +8,12 @@ from src.ecommerce_etl.io_factory import IOFactory, IOProtocolError
 def test_registry_contains_expected_io_managers():
     """Verify the manager register by themselfs when the module was imported."""
 
+    # Importing the classes to fill in the factoy's register
+    from src.ecommerce_etl.io_manager import (
+        CloudIOManager,  # noqa: F401
+        LocalIOManager,  # noqa: F401
+    )
+
     registered_keys = IOFactory._registry.keys()
 
     assert "gs" in registered_keys

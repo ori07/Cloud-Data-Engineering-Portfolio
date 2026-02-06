@@ -7,6 +7,12 @@ from src.ecommerce_etl.data_source_factory import DataSourceFactory, DataSourceT
 def test_registry_contains_expected_sources():
     """Verify the source register then by themselfs when the module was imported."""
 
+    # Importing the classes to fill in the factoy's register
+    from src.ecommerce_etl.data_source import (
+        CSVDataSource,  # noqa: F401
+        ParquetDataSource,  # noqa: F401
+    )
+
     registered_keys = DataSourceFactory._registry.keys()
 
     assert ".csv" in registered_keys
