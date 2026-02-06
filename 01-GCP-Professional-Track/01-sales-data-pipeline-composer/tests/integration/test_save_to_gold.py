@@ -1,35 +1,41 @@
 import pytest
 
-from src.ecommerce_etl import io_factory
+from src.ecommerce_etl.io_factory import IOFactory
 
 
-@pytest.mark.skip(reason="This feature is currently under refactor")
-def test_save_to_gold_is_idempotent(tmp_path, sample_valid_partitionable_df):
+@pytest.fixture
+def local_manager(tmp_path):
+    # We create a local manager pointing to pytest's temporal folder
+    return IOFactory.get_manager("local", base_path=str(tmp_path))
+
+
+def test_save_to_gold_is_idempotent(
+    local_manager, sample_valid_partitionable_df, tmp_path
+):
     # Test the correct behavior when the process is trigged two times
-    base_path = tmp_path / "gold"
+    target_path = "gold/sales_report"
 
     # First execution
-    io_factory.save_to_gold(sample_valid_partitionable_df, base_path)
-    initial_files = io_factory.get_file_list(base_path)
+    local_manager.save_dataframe(sample_valid_partitionable_df, target_path)
+    initial_files = local_manager.get_file_list(target_path)
 
     # Second execution (duplicated)
-    io_factory.save_to_gold(sample_valid_partitionable_df, base_path)
-    final_files = io_factory.get_file_list(base_path)
+    local_manager.save_dataframe(sample_valid_partitionable_df, target_path)
+    final_files = local_manager.get_file_list(target_path)
 
     # Assert: There is no extra files or duplicated folders
     assert len(initial_files) == len(final_files)
 
 
-@pytest.mark.skip(reason="This feature is currently under refactor")
-def test_hive_like_structure(sample_valid_partitionable_df, tmp_path):
+def test_hive_like_structure(local_manager, sample_valid_partitionable_df, tmp_path):
     # Test the correct tree folder's structure creation
-    base_path = tmp_path / "gold"
+    target_path = "gold/partitioned_data"
 
-    # Save the df
-    io_factory.save_to_gold(sample_valid_partitionable_df, base_path)
-    expected_path = base_path / "year=2010" / "month=12"
-    files = io_factory.get_file_list(expected_path)
-    print(files)
+    local_manager.save_dataframe(sample_valid_partitionable_df, target_path)
 
-    # There is any file in the expected path
+    # Verify physic route exists (Hive style: year=2010/month=12)
+    expected_subdir = "gold/partitioned_data/year=2010/month=12"
+    files = local_manager.get_file_list(expected_subdir)
+
     assert len(files) > 0
+    assert any(".parquet" in f for f in files)  # O el formato que estés usando

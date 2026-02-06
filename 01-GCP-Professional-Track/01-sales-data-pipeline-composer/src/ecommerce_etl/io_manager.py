@@ -64,13 +64,16 @@ class CloudIOManager(IOManager):
         return files
 
     def save_dataframe(self, df, path):
-        # Prepare the dataset
-        # Convert pandas DataFrame to an Arrow Table
+        # skip the filesystem from the path
+        clean_path = path.replace("gs://", "")
+
+        # Prepare the dataset: Convert pandas DataFrame to an Arrow Table
         table = df.to_arrow()
+
         # Write the dataset with Hive partitioning
         ds.write_dataset(
             data=table,
-            base_dir=path,
+            base_dir=clean_path,
             format="parquet",
             partitioning=["year", "month"],  # Columns to partition by
             partitioning_flavor="hive",  # Use Hive-style partitioning

@@ -6,8 +6,6 @@ from unittest.mock import MagicMock, patch
 import polars as pl
 import pytest
 
-from src.ecommerce_etl.data_source import CSVDataSource
-
 
 @pytest.fixture
 def mock_env():
@@ -16,12 +14,6 @@ def mock_env():
     yield
     os.environ.clear()
     os.environ.update(old_env)
-
-
-@pytest.fixture
-def csv_datasource_instance():
-    """Return a CSVDataSource instance."""
-    return CSVDataSource()
 
 
 @pytest.fixture
@@ -188,4 +180,20 @@ def sample_valid_partitionable_df():
             "year": [2010, 2010, 2010],
             "month": [12, 12, 11],
         },
+    )
+
+
+@pytest.fixture
+def raw_csv_like_df():
+    """
+    Representa la data exactamente como sale del CSV.
+    """
+    return pl.DataFrame(
+        {
+            "InvoiceNo": [536365],
+            "InvoiceDate": ["12/01/2010 08:26"],  # Formato raw
+            "UnitPrice": [7.00],
+            "Quantity": [6],
+            # ... faltan year y month
+        }
     )
