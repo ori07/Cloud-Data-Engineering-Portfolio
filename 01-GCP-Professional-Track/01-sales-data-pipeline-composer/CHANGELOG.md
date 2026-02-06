@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+## [[0.5.0]] - 2026-02-07
+### Added
+- **IOFactory Pattern**: Implemented a decorator-based registry for IOManagers, allowing dynamic protocol resolution (gs://, file://) from URIs.
+
+- **Cloud Persistence**: Added CloudIOManager with native GCS support, featuring automatic URI cleaning for PyArrow compatibility.
+
+- **Integration Test Suite**: Developed a robust testing layer for GCS with automatic setup/teardown using fsspec, ensuring cloud-side idempotency.
+
+### Changed
+- **Core Engine Migration (Breaking Change)**: Migrated the entire processing engine from Pandas to Polars for improved memory efficiency and performance.
+
+### Fixed
+- **Manager Dispatching**: Resolved a critical bug where the Factory incorrectly defaulted to LocalIOManager when provided with cloud URIs.
+
+- **Linter Side-Effects**: Fixed a "ghost bug" where automated linting removed essential registration imports by implementing # noqa: F401 guards.
+
+- **Arrow Path Errors**: Resolved ArrowInvalid exceptions by normalizing GCS paths before passing them to the PyArrow C++ engine.
+
 ## [0.5.0] - 2026-01-07
 ### Added
 - **Orchestration Layer**: Created src/main.py as the main entry point, coordinating the flow between validation, transformation, and persistence.
@@ -41,6 +60,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - **I/O Abstraction**: Refactored `io_manager.py` to use a unified file system interface (fsspec/pyarrow.fs), enabling agnostic execution between local environments and GCS.
+
+- **I/O Deserialization**: Saving logic to use Hive-style partitioning (year/month) via pyarrow.dataset, optimized for BigQuery external tables
 
 
 ## [0.2.0] - 2025-12-29
