@@ -1,0 +1,33 @@
+dataset_name: "ecommerce_sales"
+version: "1.0.0"
+
+# 1. Definition for the Cleasing Transformer (Casting)
+columns:
+  InvoiceNo:
+    type: "String"
+    required: true
+  StockCode:
+    type: "String"
+    required: false
+  Description:
+    type: "String"
+    required: false
+  Quantity:
+    type: "Int64"
+    required: true
+  InvoiceDate:
+    type: "Datetime"
+    format: "%m/%d/%Y %H:%M"
+    is_partition_source: true  # Flag to generate partition year/month
+    required: true
+  UnitPrice:
+    type: "Float64"
+    required: true
+  CustomerID:
+    type: "String"
+    required: true
+
+# 2. Governance's metadata
+governance:
+  quarantine_threshold: 0.05 # up to  5% of errors is allowed before to abort
+  owner: "sales_department"
